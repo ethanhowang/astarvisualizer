@@ -52,6 +52,9 @@ class Spot:
     def reset(self):
         self.color == WHITE
 
+    def make_start(self):
+        self.color = ORANGE
+
     def make_closed(self):
         self.color = RED
 
@@ -87,7 +90,7 @@ def h(p1, p2):
 
 """
 This function focuses on making and organizing all the square tiles on the board
-we are visualizing.
+we are visualizing. Grid will be in the format of : [[],[],[]]
 """
 def make_grid(rows, width):
     grid = []
@@ -100,6 +103,9 @@ def make_grid(rows, width):
 
     return grid
 
+"""
+This draw_grid method is responsible for drawing the gridlines on the board.
+"""
 def draw_grid(win, rows, width):
     gap = width // rows
     for i in range(rows):
@@ -107,4 +113,68 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
+"""
+This draw method is responsible for drawing everything, from the tiles to the
+"""
 def draw(win, grid, rows, width):
+    win.fill(WHITE)
+
+    for row in grid:
+        for spot in row:
+            spot.draw(win)
+
+    draw_grid(win, rows, width)
+    pygame.display.update()
+
+"""
+Responds to user input to locate the location of click.
+"""
+def get_clicked_pos(pos, rows, width):
+    gap = width // rows
+    y, x = pos
+
+    row = y // gap
+    col = x // gap
+
+    return row, col
+
+def main(win, width):
+    ROWS = 50
+    grid = make_grid(ROWS, width)
+
+    start = None
+    end = None
+
+    run = True
+    started = False
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if started:
+                continue
+
+            if pygame.mouse.get_pressed()[0]: # LEFT click
+                pos = pygame.mouse.get_pos()
+                row, col = get_clicked_pos(pos, ROWS, width)
+                spot = grid[row][col]
+                if not start:
+                    start = spot
+                    start.make_start()
+
+                elif not end:
+                    end = spot
+                    end.make_end()
+
+                elif spot != end and spot != start:
+                    spot.make_barrier()
+
+            elif pygame.mouse.get_pressed()[2]: # RIGHT click
+                pass
+
+
+    pygame.quit()
+
+
+main(WIN, WIDTH)
