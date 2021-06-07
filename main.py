@@ -104,6 +104,17 @@ def h(p1, p2):
 
 
 """
+This function is for retracing the path given that we have found the shortest path
+"""
+def reconstruct_path(came_from, current, draw):
+    while current in came_from:
+        current = came_from[current]
+        current.make_path()
+        draw()
+
+
+
+"""
 This function defines the complete astar algorithm that performs informed search which
 is more efficient than your traditional breadth first search or depth first search algorithms.
 f_score = g_score (the distance from start node to current) + h_score (the distance from current to end, estimated)
@@ -121,6 +132,40 @@ def algorithm(draw, grid, start, end):
     # used to keep track of what's in the piority queue, while the priority queue does
     # not have the ability to check that
     open_set_hash = {start}
+
+    while not open_set.empty():
+        for event in pygame.event.get(): # just in case the user wants to quit the entire program when this algorithm is running
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+        current = open_set.get()[2]
+        open_set_hash.remove(current)
+
+        if current == end:
+            reconstruct_path(came_from, end, draw)
+            end.make_end()
+            start.make_start()
+            return True
+
+        for neighbor in current.neighbors:
+            temp_g_score = g_score[current] + 1
+
+            if temp_g_score < g_score[neighbor]:
+                came_from[neighbor] = current
+                g_score[neighbor] = temp_g_score
+                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos())
+                if neighbor not in open_set_hash:
+                    count += 1
+                    open_set.put((f_score[neighbor], count, neighbor))
+                    open_set_hash.add(neighbor)
+                    neighbor.make_open()
+
+        draw()
+
+        if current != start:
+            current.make_closed()
+
+
 
 
 
@@ -189,9 +234,6 @@ def main(win, width):
             if event.type == pygame.QUIT:
                 run = False
 
-            if started:
-                continue
-
             if pygame.mouse.get_pressed()[0]: # LEFT click
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
@@ -218,14 +260,17 @@ def main(win, width):
                     end = None
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not started:
+                if event.key == pygame.K_SPACE and start and end:
                     for row in grid:
                         for spot in row:
-                            spot.update_neighbors()
+                            spot.update_neighbors(grid)
 
                     algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
 
-
+                if event.key == pygame.K_c:
+                    start = None
+                    end = None
+                    grid = make_grid(ROWS, width)
 
 
     pygame.quit()
