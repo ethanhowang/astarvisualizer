@@ -102,6 +102,28 @@ def h(p1, p2):
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
+
+"""
+This function defines the complete astar algorithm that performs informed search which
+is more efficient than your traditional breadth first search or depth first search algorithms.
+f_score = g_score (the distance from start node to current) + h_score (the distance from current to end, estimated)
+"""
+def algorithm(draw, grid, start, end):
+    count = 0
+    open_set = PriorityQueue()
+    open_set.put((0, count, start))
+    came_from = {}
+    g_score = {spot: float("inf") for row in grid for spot in row}
+    g_score[start] = 0
+    f_score = {spot: float("inf") for row in grid for spot in row}
+    f_score[start] = h(start.get_pos(), end.get_pos())
+
+    # used to keep track of what's in the piority queue, while the priority queue does
+    # not have the ability to check that
+    open_set_hash = {start}
+
+
+
 """
 This function focuses on making and organizing all the square tiles on the board
 we are visualizing. Grid will be in the format of : [[],[],[]]
